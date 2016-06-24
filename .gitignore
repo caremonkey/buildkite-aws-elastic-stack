@@ -5,4 +5,4 @@ templates/mappings.yml
 vendor/
 .bundle/
 *.bak
-
+.idea

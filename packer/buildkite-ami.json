@@ -4,7 +4,6 @@
       "type": "amazon-ebs",
       "region": "us-east-1",
       "source_ami": "ami-08111162",
-      "region": "us-east-1",
       "instance_type": "c4.large",
       "ssh_username": "ec2-user",
       "ami_name": "buildkite-stack-{{isotime | clean_ami_name}}",
@@ -33,6 +32,20 @@
     {
       "type": "shell",
       "script": "scripts/install-buildkite-agent.sh"
+    } ,
+    {
+      "type": "shell",
+      "execute_command": "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "sed -i '/^\\[epel\\]$/,/^\\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/epel.repo",
+        "yum install -y ansible"
+      ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "../ansible/build-node.yml",
+      "playbook_dir": "../ansible/",
+      "inventory_file": "../ansible/inventory"
     }
   ]
 }
