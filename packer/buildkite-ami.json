@@ -42,10 +42,26 @@
       ]
     },
     {
-      "type": "ansible-local",
-      "playbook_file": "../ansible/build-node.yml",
-      "playbook_dir": "../ansible/",
-      "inventory_file": "../ansible/inventory"
+      "type": "shell",
+      "inline": [
+        "docker pull postgres:9.4",
+        "docker pull memcached:1.4-alpine",
+        "docker pull redis:2.8.19"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "../../cm/build",
+      "destination": "/tmp/cm-builder/build"
+    },
+    {
+      "type": "file",
+      "source": "../../cm/Gemfile*",
+      "destination": "/tmp/cm-builder/"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/caremonkey-builder-image.sh"
     }
   ]
 }
