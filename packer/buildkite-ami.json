@@ -4,7 +4,7 @@
       "type": "amazon-ebs",
       "region": "us-east-1",
       "source_ami": "ami-08111162",
-      "instance_type": "c4.large",
+      "instance_type": "m3.medium",
       "ssh_username": "ec2-user",
       "ami_name": "buildkite-stack-{{isotime | clean_ami_name}}",
       "ami_description": "Buildkite CloudFormation Stack base image (Amazon Linux, buildkite-agent, docker, docker-compose, docker-gc, jq, lifecycled)",
@@ -35,18 +35,10 @@
     } ,
     {
       "type": "shell",
-      "execute_command": "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
       "inline": [
-        "sed -i '/^\\[epel\\]$/,/^\\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/epel.repo",
-        "yum install -y ansible"
-      ]
-    },
-    {
-      "type": "shell",
-      "inline": [
-        "docker pull postgres:9.4",
-        "docker pull memcached:1.4-alpine",
-        "docker pull redis:2.8.19"
+        "sudo docker pull postgres:9.4",
+        "sudo docker pull memcached:1.4-alpine",
+        "sudo docker pull redis:2.8.19"
       ]
     },
     {
@@ -56,7 +48,12 @@
     },
     {
       "type": "file",
-      "source": "../../cm/Gemfile*",
+      "source": "../../cm/Gemfile",
+      "destination": "/tmp/cm-builder/"
+    },
+    {
+      "type": "file",
+      "source": "../../cm/Gemfile.lock",
       "destination": "/tmp/cm-builder/"
     },
     {
