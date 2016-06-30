@@ -1,0 +1,29 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+
+  vars:
+    - cm_buildimage: "caremonkey/cmbuilder"
+    - ecr_image_name: "984601232468.dkr.ecr.us-west-2.amazonaws.com/{{ cm_buildimage }}:latest"
+
+  tasks:
+    - name: Get Login command for private AWS ECR registry
+          command: aws ecr get-login --region us-west-2
+          register: docker_login_command
+
+    - name: Login to the registry
+      command: "{{ docker_login_command.stdout_lines }}"
+
+    - name: Pull supporting Docker images
+      become: yes
+      docker_image:
+       name: "{{ item }}"
+      with_items:
+        - "postgres:9.4"
+        - "memcached:1.4-alpine"
+        - "redis:2.8.19"
+        - "{{ ecr_image_name }}"
+
+    - name: Tag the builder image with something easier to work with
+      become: yes
+      command: docker tag "{{ ecr_image_name }}" "{{ cm_buildimage }}:latest"

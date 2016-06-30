@@ -5,3 +5,4 @@ vendor/
 .bundle/
 *.bak
 .idea
+config.json

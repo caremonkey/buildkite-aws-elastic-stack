@@ -32,33 +32,16 @@
     {
       "type": "shell",
       "script": "scripts/install-buildkite-agent.sh"
-    } ,
-    {
-      "type": "shell",
-      "inline": [
-        "sudo docker pull postgres:9.4",
-        "sudo docker pull memcached:1.4-alpine",
-        "sudo docker pull redis:2.8.19"
-      ]
-    },
-    {
-      "type": "file",
-      "source": "../../cm/build",
-      "destination": "/tmp/cm-builder/build"
-    },
-    {
-      "type": "file",
-      "source": "../../cm/Gemfile",
-      "destination": "/tmp/cm-builder/"
-    },
-    {
-      "type": "file",
-      "source": "../../cm/Gemfile.lock",
-      "destination": "/tmp/cm-builder/"
     },
     {
       "type": "shell",
-      "script": "scripts/caremonkey-builder-image.sh"
+      "inline":
+        [ "sudo pip install ansible docker-py"]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "../ansible/build-node.yml",
+      "extra_arguments": [ "-vv" ]
     }
   ]
 }

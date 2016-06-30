@@ -1,10 +1,14 @@
 [
   {
     "ParameterKey": "BuildkiteOrgSlug",
-    "ParameterValue": "MyOrg"
+    "ParameterValue": "care-monkey"
   },
   {
     "ParameterKey": "BuildkiteAgentToken",
     "ParameterValue": "TokenGoesHere"
+  },
+  {
+      "ParameterKey": "InstanceType",
+      "ParameterValue": "t2.small"
   }
 ]
