@@ -12,6 +12,7 @@
       register: docker_login_command
 
     - name: Login to the registry
+      become: yes
       command: "{{ docker_login_command.stdout_lines.0 }}"
 
     - name: Pull supporting Docker images
