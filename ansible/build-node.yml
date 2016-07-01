@@ -8,8 +8,8 @@
 
   tasks:
     - name: Get Login command for private AWS ECR registry
-          command: aws ecr get-login --region us-west-2
-          register: docker_login_command
+      command: aws ecr get-login --region us-west-2
+      register: docker_login_command
 
     - name: Login to the registry
       command: "{{ docker_login_command.stdout_lines }}"
