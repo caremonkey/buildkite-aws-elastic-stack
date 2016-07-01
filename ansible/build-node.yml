@@ -3,7 +3,7 @@
   connection: local
 
   vars:
-    - cm_buildimage: "caremonkey/cmbuilder"
+    - cm_buildimage: "caremonkey/cm-builder"
     - ecr_image_name: "984601232468.dkr.ecr.us-west-2.amazonaws.com/{{ cm_buildimage }}:latest"
 
   tasks:
@@ -12,7 +12,7 @@
       register: docker_login_command
 
     - name: Login to the registry
-      command: "{{ docker_login_command.stdout_lines }}"
+      command: "{{ docker_login_command.stdout_lines.0 }}"
 
     - name: Pull supporting Docker images
       become: yes
