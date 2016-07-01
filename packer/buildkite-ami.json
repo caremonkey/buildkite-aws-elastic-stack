@@ -8,7 +8,8 @@
       "ssh_username": "ec2-user",
       "ami_name": "buildkite-stack-{{isotime | clean_ami_name}}",
       "ami_description": "Buildkite CloudFormation Stack base image (Amazon Linux, buildkite-agent, docker, docker-compose, docker-gc, jq, lifecycled)",
-      "ami_groups": ["all"]
+      "ami_groups": ["all"],
+      "iam_instance_profile": "ecsInstanceRole"
     }
   ],
   "provisioners": [
