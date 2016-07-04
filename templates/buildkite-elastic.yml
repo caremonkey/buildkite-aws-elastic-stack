@@ -221,6 +221,11 @@ Resources:
               - ec2:DescribeTags
               - autoscaling:CompleteLifecycleAction
               - autoscaling:RecordLifecycleActionHeartbeat
+              - ecr:GetAuthorizationToken
+              - ecr:BatchGetImage
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchCheckLayerAvailability
+
             Resource: "*"
           - Effect: Allow
             Action:
