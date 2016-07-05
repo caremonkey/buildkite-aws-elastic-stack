@@ -42,6 +42,7 @@
     {
       "type": "ansible-local",
       "playbook_file": "../ansible/build-node.yml",
+      "playbook_dir": "../ansible/",
       "extra_arguments": [ "-vv" ]
     }
   ]

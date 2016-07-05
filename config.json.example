@@ -1,14 +1,42 @@
 [
-  {
-    "ParameterKey": "BuildkiteOrgSlug",
-    "ParameterValue": "care-monkey"
-  },
-  {
-    "ParameterKey": "BuildkiteAgentToken",
-    "ParameterValue": "TokenGoesHere"
-  },
-  {
-      "ParameterKey": "InstanceType",
-      "ParameterValue": "t2.small"
-  }
+    {
+        "ParameterKey": "KeyName",
+        "ParameterValue": "joff-cernan"
+    },
+    {
+        "ParameterKey": "SecretsBucket",
+        "ParameterValue": "caremonkey-buildkite"
+    },
+    {
+        "ParameterKey": "BuildkiteOrgSlug",
+        "ParameterValue": "care-monkey"
+    },
+    {
+        "ParameterKey": "BuildkiteAgentToken",
+        "ParameterValue": "TOKEN-GOES-HERE"
+    },
+    {
+        "ParameterKey": "BuildkiteApiAccessToken",
+        "ParameterValue": "TOKEN-GOES-HERE"
+    },
+    {
+        "ParameterKey": "InstanceType",
+        "ParameterValue": "t2.large"
+    },
+    {
+        "ParameterKey": "BuildkiteAgentsPerInstance",
+        "ParameterValue": "6"
+    },
+    {
+        "ParameterKey": "ImageId",
+        "ParameterValue": "ami-7b50911b"
+    },
+    {
+        "ParameterKey": "MinSize",
+        "ParameterValue": "1"
+    },
+    {
+        "ParameterKey": "ScaleUpAdjustment",
+        "ParameterValue": "2"
+    }
 ]
