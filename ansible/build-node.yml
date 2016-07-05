@@ -9,21 +9,22 @@
 
     - name: Run the ECR login now for good measure
       become: yes
+      become_user: buildkite-agent
       command: /usr/local/bin/ecr-login.sh
 
     - name: Add it to the crontab
       become: yes
+      become_user: buildkite-agent
       cron:
         name: "ECR login"
         job: "/usr/local/bin/ecr-login.sh 2>&1 /dev/null"
         state: present
-        user: buildkite-agent
         minute: "*/10"
 
     - name: Pull supporting Docker images
       become: yes
-      docker_image:
-       name: "{{ item }}"
+      become_user: buildkite-agent
+      command: docker pull "{{ item }}"
       with_items:
         - "984601232468.dkr.ecr.us-west-2.amazonaws.com/caremonkey/cm-builder:3"
         - "postgres:9.4"
