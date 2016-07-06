@@ -86,17 +86,19 @@ Mappings:
     us-east-1 : { AMI: $base_image_id }
 EOF
 
-  for region in ${DESTINATION_REGIONS[*]} ; do
-    echo "--- Copying $image_id to $region"
+  if [[ $BUILDKITE_BRANCH == "master" ]] ; then
+    for region in ${DESTINATION_REGIONS[*]} ; do
+      echo "--- Copying $image_id to $region"
 
-    copied_image_id=$(copy_ami_to_region "$base_image_id" us-east-1 "$region" "$image_name-$region")
+      copied_image_id=$(copy_ami_to_region "$base_image_id" us-east-1 "$region" "$image_name-$region")
 
-    wait_for_ami_to_be_available "$copied_image_id" "$region"
+      wait_for_ami_to_be_available "$copied_image_id" "$region"
 
-    make_ami_public "$copied_image_id" "$region"
+      make_ami_public "$copied_image_id" "$region"
 
-    echo "    $region : { AMI: $copied_image_id }" >> "$destination_yml"
-  done
+      echo "    $region : { AMI: $copied_image_id }" >> "$destination_yml"
+    done
+  fi
 }
 
 generate_mappings() {
@@ -104,7 +106,7 @@ generate_mappings() {
   local s3_mappings_cache
 
   image_id=$(buildkite-agent meta-data get image_id)
-  s3_mappings_cache="s3://${BUILDKITE_AWS_STACK_BUCKET}/mappings-${image_id}.yml"
+  s3_mappings_cache="s3://${BUILDKITE_AWS_STACK_BUCKET}/mappings-${image_id}-${BUILDKITE_BRANCH}.yml"
 
   if aws s3 cp "${s3_mappings_cache}" templates/mappings.yml ; then
     echo "Skipping creating additional AZ mappings, base AMI has not changed"
