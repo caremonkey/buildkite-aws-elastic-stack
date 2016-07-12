@@ -21,11 +21,11 @@
     },
     {
         "ParameterKey": "InstanceType",
-        "ParameterValue": "t2.large"
+        "ParameterValue": "m3.xlarge"
     },
     {
-        "ParameterKey": "BuildkiteAgentsPerInstance",
-        "ParameterValue": "6"
+        "ParameterKey": "AgentsPerInstance",
+        "ParameterValue": "10"
     },
     {
         "ParameterKey": "ImageId",
