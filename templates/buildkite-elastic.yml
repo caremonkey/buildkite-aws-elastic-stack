@@ -225,6 +225,10 @@ Resources:
               - ecr:BatchGetImage
               - ecr:GetDownloadUrlForLayer
               - ecr:BatchCheckLayerAvailability
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload
+              - ecr:PutImage
 
             Resource: "*"
           - Effect: Allow
