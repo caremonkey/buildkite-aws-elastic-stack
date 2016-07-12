@@ -8,10 +8,9 @@ Metadata:
         Parameters:
         - BuildkiteAgentRelease
         - BuildkiteAgentToken
-        - BuildkiteOrgSlug
         - BuildkiteQueue
+        - BuildkiteOrgSlug
         - BuildkiteApiAccessToken
-        - BuildkiteAgentsPerInstance
 
       - Label:
           default: Network Configuration
@@ -26,6 +25,7 @@ Metadata:
         Parameters:
         - ImageId
         - InstanceType
+        - AgentsPerInstance
         - KeyName
         - SpotPrice
         - SecretsBucket
@@ -48,47 +48,53 @@ Parameters:
     Description: The ssh keypair used to access the buildkite instances
     Type: AWS::EC2::KeyPair::KeyName
 
-  BuildkiteOrgSlug:
-    Description: Your Buildkite organization's slug
-    Type: String
-
   BuildkiteAgentRelease:
-    Description: The buildkite-agent release stream ("stable", "unstable" or "experimental")
     Type: String
+    AllowedValues:
+      - stable
+      - unstable
+      - experimental
     Default: "stable"
 
   BuildkiteAgentToken:
-    Description: Your Buildkite organization's agent token
+    Description: Your Buildkite Agent token
     Type: String
     NoEcho: true
+    MinLength: 1
+
+  BuildkiteOrgSlug:
+    Description: Optional Buildkite organization slug (required for autoscaling metrics)
+    Type: String
 
   BuildkiteApiAccessToken:
-    Description: Optional - A Buildkite API access token (with read_pipelines, read_builds and read_agents) used for gathering metrics
+    Description: Optional Buildkite API access token with read_pipelines, read_builds and read_agents (required for autoscaling metrics)
     Type: String
     NoEcho: true
 
   BuildkiteQueue:
-    Description: Name of the Buildkite agent queue that agents will use
+    Description: Queue name that agents will use, targetted in pipeline steps using "queue={value}"
     Type: String
     Default: elastic
+    MinLength: 1
 
-  BuildkiteAgentsPerInstance:
-    Description: The number of Buildkite agents to run on each instance
+  AgentsPerInstance:
+    Description: Number of Buildkite agents to run on each instance
     Type: Number
     Default: 1
+    MinValue: 1
 
   SecretsBucket:
-    Description: Optional - name of an S3 bucket containing provisioning files
+    Description: Optional - name of an existing S3 bucket containing pipeline secrets
     Type: String
     Default: ""
 
   ArtifactsBucket:
-    Description: Optional - name of an S3 bucket for build artifact storage
+    Description: Optional - name of an existing S3 bucket for build artifact storage
     Type: String
     Default: ""
 
   AuthorizedUsersUrl:
-    Description: Optional - An url to periodically download ssh authorized_keys from
+    Description: Optional - S3 url to periodically download ssh authorized_keys from
     Type: String
     Default: ""
 
@@ -111,6 +117,7 @@ Parameters:
     Description: The type of instance to use for the agent
     Type: String
     Default: t2.nano
+    MinLength: 1
 
   SpotPrice:
     Description: Optional - Spot price to use for the agents. 0 means normal (non-spot) instances are used
@@ -121,6 +128,7 @@ Parameters:
     Description: The maximum number of agents to launch
     Type: Number
     Default: 10
+    MinValue: 1
 
   MinSize:
     Description: The minumum number of agents to launch
@@ -128,24 +136,28 @@ Parameters:
     Default: 0
 
   ScaleUpAdjustment:
-    Description: The number of agents to adjust by on each scale up event (ScheduledJobsCount > 0 for 1 minute)
+    Description: The number of agents to adjust by on each scale up event (ScheduledJobsCount > 0 for 1 min)
     Type: Number
     Default: 5
+    MinValue: 0
 
   ScaleDownAdjustment:
-    Description: The number of agents to remove on each scale down event (BusyAgentCount == 0 for the last 6 minutes, every 2 minutes)
+    Description: The number of agents to remove on each scale down event (BusyAgentCount == 0 for the last 6 mins, every 2 mins)
     Type: Number
     Default: -1
+    MaxValue: 0
 
   RootVolumeSize:
     Description: Size of EBS volume for root filesystem in GB.
     Type: Number
     Default: 250
+    MinValue: 10
 
   RootVolumeIops:
     Description: Provisioned IOPS for the root volume. You get 3 free for each GB
     Type: Number
     Default: 750
+    MinValue: 0
 
   SecurityGroupId:
     Type: String
@@ -313,7 +325,7 @@ Resources:
                 cat << EOF > /var/lib/buildkite-agent/cfn-env
                 BUILDKITE_STACK_NAME=$(AWS::StackName)
                 BUILDKITE_SECRETS_BUCKET=$(SecretsBucket)
-                BUILDKITE_AGENTS_PER_INSTANCE=$(BuildkiteAgentsPerInstance)
+                BUILDKITE_AGENTS_PER_INSTANCE=$(AgentsPerInstance)
                 EOF
 
                 chown buildkite-agent: /var/lib/buildkite-agent/cfn-env
@@ -365,12 +377,10 @@ Resources:
 
                 # Setup logging first so we capture everything
 
-                mkdir -p /var/awslogs/etc/config/
-
-                for i in \$(seq 1 $(BuildkiteAgentsPerInstance)); do
+                for i in \$(seq 1 $(AgentsPerInstance)); do
                   touch /var/log/buildkite-agent-\${i}.log
 
-                  cat << EOF > /var/awslogs/etc/config/buildkite-agent-\${i}
+                  cat << EOF > /etc/awslogs/config/buildkite-agent-\${i}.conf
                 [/var/log/buildkite-agent-\${i}.log]
                 file = /var/log/buildkite-agent-\${i}.log
                 log_group_name = /var/log/buildkite-agent.log
@@ -383,7 +393,7 @@ Resources:
 
                 # Setup and start services
 
-                for i in \$(seq 1 $(BuildkiteAgentsPerInstance)); do
+                for i in \$(seq 1 $(AgentsPerInstance)); do
                   cp /etc/buildkite-agent/init.d.tmpl /etc/init.d/buildkite-agent-\${i}
                   service buildkite-agent-\${i} start
                   chkconfig --add buildkite-agent-\${i}
