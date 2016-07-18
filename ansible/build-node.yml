@@ -26,7 +26,7 @@
       become_user: buildkite-agent
       command: docker pull "{{ item }}"
       with_items:
-        - "984601232468.dkr.ecr.us-west-2.amazonaws.com/caremonkey/cm-builder:20"
+        - "984601232468.dkr.ecr.us-west-2.amazonaws.com/caremonkey/cm-builder:53"
         - "postgres:9.4"
         - "memcached:1.4-alpine"
         - "redis:2.8.19"
