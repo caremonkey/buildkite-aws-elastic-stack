@@ -1,7 +1,7 @@
 [
     {
         "ParameterKey": "KeyName",
-        "ParameterValue": "joff-cernan"
+        "ParameterValue": "ssh-buildkite"
     },
     {
         "ParameterKey": "SecretsBucket",
@@ -21,22 +21,22 @@
     },
     {
         "ParameterKey": "InstanceType",
-        "ParameterValue": "m3.xlarge"
+        "ParameterValue": "c4.large"
     },
     {
         "ParameterKey": "AgentsPerInstance",
-        "ParameterValue": "10"
+        "ParameterValue": "4"
     },
     {
         "ParameterKey": "ImageId",
-        "ParameterValue": "ami-308f4f50"
+        "ParameterValue": "ami-27bf7247"
     },
     {
         "ParameterKey": "MinSize",
-        "ParameterValue": "1"
+        "ParameterValue": "3"
     },
     {
         "ParameterKey": "ScaleUpAdjustment",
-        "ParameterValue": "2"
+        "ParameterValue": "1"
     }
 ]
