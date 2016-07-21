@@ -4,25 +4,22 @@
 
   tasks:
     - name: Copy ECR login shell script
-      become: yes
       copy: src=files/ecr-login.sh dest=/usr/local/bin/ecr-login.sh mode=0755
 
     - name: Run the ECR login now for good measure
-      become: yes
       become_user: buildkite-agent
       command: /usr/local/bin/ecr-login.sh
 
-    - name: Add it to the crontab
-      become: yes
-      become_user: buildkite-agent
-      cron:
-        name: "ECR login"
-        job: "/usr/local/bin/ecr-login.sh 2>&1 /dev/null"
-        state: present
-        minute: "*/10"
+    # - name: Add it to the crontab
+    #   become: yes
+    #   become_user: buildkite-agent
+    #   cron:
+    #     name: "ECR login"
+    #     job: "/usr/local/bin/ecr-login.sh 2>&1 /dev/null"
+    #     state: present
+    #     minute: "*/10"
 
     - name: Pull supporting Docker images
-      become: yes
       become_user: buildkite-agent
       command: docker pull "{{ item }}"
       with_items:
@@ -30,3 +27,22 @@
         - "postgres:9.4"
         - "memcached:1.4-alpine"
         - "redis:2.8.19"
+
+    # - name: Ensure .ssh directory
+    #   file: path=/var/lib/buildkite-agent/.ssh/
+    #         state=directory
+    #         owner=buildkite-agent
+    #         mode=0700
+
+    # - name: Copy SSH Keys for git reference cache
+    #   copy: src={{ item.src }}
+    #         dest=/var/lib/buildkite-agent/.ssh/{{ item.dest }}
+    #         owner=buildkite-agent
+    #         mode=0600
+    #   with_items:
+    #     - { src: 'buildkite-repo-puller.sec', dest: 'id_rsa' }
+    #     - { src: 'buildkite-repo-puller.pub', dest: 'id_rsa.pub' }
+
+    # - name: Clone the cm repo into a reference
+    #   become_user: buildkite-agent
+    #   command: git clone --mirror git@github.com:caremonkey/cm.git /var/lib/buildkite-agent/cm-cache
