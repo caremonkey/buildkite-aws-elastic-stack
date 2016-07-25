@@ -19,6 +19,7 @@ Metadata:
         - Subnets
         - AvailabilityZones
         - SecurityGroupId
+        - ManagedPolicyArns
 
       - Label:
           default: Instance Configuration
@@ -47,6 +48,7 @@ Parameters:
   KeyName:
     Description: The ssh keypair used to access the buildkite instances
     Type: AWS::EC2::KeyPair::KeyName
+    MinLength: 1
 
   BuildkiteAgentRelease:
     Type: String
@@ -142,7 +144,7 @@ Parameters:
     MinValue: 0
 
   ScaleDownAdjustment:
-    Description: The number of agents to remove on each scale down event (BusyAgentCount == 0 for the last 6 mins, every 2 mins)
+    Description: The number of agents to remove on each scale down event (UnfinishedJobs == 0 for 30 mins)
     Type: Number
     Default: -1
     MaxValue: 0
@@ -162,6 +164,11 @@ Parameters:
   SecurityGroupId:
     Type: String
     Description: Optional - Existing security group to associate the container instances. Creates one by default.
+    Default: ""
+
+  ManagedPolicyArns:
+    Type: CommaDelimitedList
+    Description: Optional - ARNs of existing managed IAM policies to associate with the container instances.
     Default: ""
 
   ImageId:
@@ -194,6 +201,9 @@ Conditions:
     CreateMetricsStack:
       !Not [ !Equals [ $(BuildkiteApiAccessToken), "" ] ]
 
+    UseSpecifiedIamPolicies:
+      !Not [ !Equals [ !Join [ "", $(ManagedPolicyArns) ], "" ]  ]
+
 Outputs:
   AgentAutoScaleTopic:
     Value: $(AgentAutoScaleTopic)
@@ -212,6 +222,7 @@ Resources:
   IAMRole:
     Type: AWS::IAM::Role
     Properties:
+      ManagedPolicyArns: !If [ "UseSpecifiedIamPolicies", $(ManagedPolicyArns), '$(AWS::NoValue)' ]
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -346,7 +357,18 @@ Resources:
                 EOF
 
                 start lifecycled
-            02-install-buildkite:
+            02-restart-docker:
+              command: |
+                #!/bin/bash -eu
+
+                # Sometimes Docker can be unreponsive:
+                # https://github.com/docker/docker/issues/23131
+                # https://github.com/buildkite/elastic-ci-stack-for-aws/issues/86
+                #
+                # As a workaround we start the docker daemon, wait 10 seconds, and verify
+                service docker start || ( cat /var/log/docker && false )
+                sleep 10 && docker info
+            03-install-buildkite:
               command: |
                 #!/bin/bash -eu
 
@@ -403,7 +425,7 @@ Resources:
                   chkconfig --add buildkite-agent-\${i}
                 done
 
-            03-fetch-authorized-users:
+            04-fetch-authorized-users:
               test: test -n "$(AuthorizedUsersUrl)"
               command: |
                 #!/bin/bash -eu
